@@ -15,6 +15,7 @@ export default function Home() {
         </div>
 
         <button
+        //function we call in browser to sign in with github, and redirect to dashboard after login
           onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
           className="flex items-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition mx-auto"
         >
