@@ -27,8 +27,18 @@ const handler = NextAuth({
               image: user.image,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               githubUsername: (profile as any)?.login,
+              accessToken: account?.access_token,
+              
             },
           });
+        }
+        else{
+            await prisma.user.update({
+                where: { email: user.email! },
+                data: {
+                    accessToken: account?.access_token,
+                }
+            })
         }
         return true;
       } catch (error) {
