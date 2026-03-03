@@ -88,6 +88,79 @@ import { NextResponse } from "next/server";
             catch(error){
                 console.error(`Error syncying ${repo.name}: `, error)
             }
+            
+            try{
+                const commits = await fetchRepoCommits(user.accessToken, repo.owner.login, repo.name)
+
+                const totalCommits = commits.length
+
+                //const lastCommitedDate = totalCommits > 0 ? new Date(commits[0].commit.author?.date) : null
+                const lastCommitDate = totalCommits > 0 && commits[0].commit.author?.date ? new Date(commits[0].commit.author.date) : null;
+                await prisma.repositories.update({
+                    where : {githubId: repo.id}, 
+                    data : { 
+                        totalCommits,
+                        lastCommitDate
+                    }
+                })
+
+            console.log(`${repo.name} → ${totalCommits} commits`)
+            }
+            catch(error){
+                console.error(`Error syncying ${repo.name}: `, error)
+            }
+
+            try{
+                const pulls = await fetchRepoPullRequests(user.accessToken, repo.owner.login, repo.name)
+                
+                const totalPRs = pulls.length
+                const mergedPRs = pulls.filter(pr => pr.merged_at != null).length
+
+                //to calculate avg merge time 
+                const mergedPulls = pulls.filter(pr => pr.merged_at != null)
+                const avgPRMergeTime = mergedPulls.length > 0 ? mergedPulls.reduce((sum, pr) => {
+                    const created = new Date(pr.created_at).getTime() //ms
+                    const merged =  new Date(pr.merged_at!).getTime() //ms
+                    return sum + (merged - created)/(1000 * 60 * 60)
+                },0)/mergedPulls.length
+                :
+                0
+                await prisma.repositories.update({
+                            where: { githubId: repo.id },
+                            data: { totalPRs, mergedPRs, avgPRMergeTime }
+                        })
+                console.log(`${repo.name} → ${totalPRs} PRs, avg merge time: ${avgPRMergeTime.toFixed(1)}hrs`)
+            }
+            catch(error){
+                console.error(`Error syncying ${repo.name}: `, error)
+            }
+
+            try{
+                const issues = await fetchRepoIssues( user.accessToken,repo.owner.login,repo.name)
+                const realIssues = issues.filter(issue => !issue.pull_request)
+                const totalIssues = realIssues.length
+
+                const openIssues = realIssues.filter(i => i.state == "open").length
+
+                //avg closing time 
+                const closedIssues = realIssues.filter(issue => issue.closed_at !== null)
+                const avgIssueCloseTime = closedIssues.length > 0
+                ? closedIssues.reduce((sum, issue) => {
+                    const created = new Date(issue.created_at).getTime()
+                    const closed = new Date(issue.closed_at!).getTime()
+                    return sum + (closed - created) / (1000 * 60 * 60)
+                }, 0) / closedIssues.length
+                : 0
+
+                await prisma.repositories.update({
+                where: { githubId: repo.id },
+                data: { totalIssues, openIssues, avgIssueCloseTime }
+            })
+                console.log(`${repo.name} → ${totalIssues} issues, avg close time: ${avgIssueCloseTime.toFixed(1)}hrs`)
+            }
+            catch(error){
+                console.error(`Error syncying ${repo.name}: `, error)
+            }
         }
         return NextResponse.json({
         success: true,
