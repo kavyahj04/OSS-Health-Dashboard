@@ -17,13 +17,14 @@ export async function fetchUserRepos(accessToken:string) {
 
 export async function fetchRepoContributors(accessToken:string, owner:string, repo:string){
     const octokit = getOctokit(accessToken);
-
+    // fetch top 100 contributors for a repo
     const {data : contributors} = await octokit.rest.repos.listContributors({owner, repo, per_page : 100})
     return contributors
 }
 
 export async function fetchRepoCommits(accessToken:string, owner: string, repo: string) {
     const octokit = getOctokit(accessToken);
+    // fetch last 100 commits for a repo
     const {data : commits} = await octokit.rest.repos.listCommits({owner, repo, per_page : 100})
     return commits
 }
@@ -38,6 +39,57 @@ export async function fetchRepoPullRequests(accessToken:string, owner: string, r
 export async function fetchRepoIssues(accessToken: string, owner: string, repo: string)
 {
     const octokit = getOctokit(accessToken);
+    // fetch all issues (open + closed) for a repo
     const {data : issues} = await octokit.rest.issues.listForRepo({owner, repo, state:"all", per_page: 100})
     return issues
+}
+
+export async function fetchRepoContent(accessToken: string, owner: string, repo: string) {
+    const octokit = getOctokit(accessToken);
+    try{
+        //go to root of the repo and fetch content
+        const {data} = await octokit.rest.repos.getContent({owner, repo, path:""})
+        return Array.isArray(data) ? data : []
+  } catch (error) {
+        return []
+  }
+}
+
+  export async function fetchPackageJson(accessToken: string, owner: string, repo: string) {
+    const octokit = getOctokit(accessToken);
+    try{
+        // fetch package.json from repo root
+        const {data} = await octokit.rest.repos.getContent({owner, repo, path:"package.json"})
+        if("content" in data){
+            // data.content is base64 encoded
+            // we decode it to get the actual JSON string
+            const decoded = Buffer.from(data.content, "base64").toString("utf-8")
+            return JSON.parse(decoded)
+        }
+        return null
+    } catch (error) {
+        return null
+    }
+}
+
+export async function fetchRepoFileTree(accessToken: string, owner: string, repo: string) {
+    const octokit = getOctokit(accessToken);
+
+    try{
+        // Get the default branch first
+        const {data : repoData} = await octokit.rest.repos.get({owner, repo})
+
+        // Then get the full recursive file tree
+        const { data } = await octokit.rest.git.getTree({
+        owner,
+        repo,
+        tree_sha: repoData.default_branch,
+        recursive: "1",  // "1" -> fetch all nested files
+        })
+        
+        return data.tree
+    }
+    catch(error){
+        return []
+    }
 }

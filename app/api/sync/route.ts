@@ -171,10 +171,6 @@ return NextResponse.json({
   success: true,
   repoCount: githubRepos.length
 })
-        return NextResponse.json({
-        success: true,
-        repoCount: githubRepos.length,
-    })
     
     }
 
