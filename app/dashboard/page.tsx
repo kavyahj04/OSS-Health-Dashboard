@@ -29,7 +29,7 @@ export default function DashboardPage() {
       <p className="text-gray-400 mb-8">
         {session?.user?.email}
       </p>
-
+       
       <button
         onClick={handleSync}
         disabled={syncing}

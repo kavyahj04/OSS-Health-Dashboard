@@ -162,10 +162,20 @@ import { NextResponse } from "next/server";
                 console.error(`Error syncying ${repo.name}: `, error)
             }
         }
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { lastSyncedAt: new Date() }
+            })
+
+return NextResponse.json({
+  success: true,
+  repoCount: githubRepos.length
+})
         return NextResponse.json({
         success: true,
         repoCount: githubRepos.length,
     })
+    
     }
 
 

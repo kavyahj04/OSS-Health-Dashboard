@@ -14,6 +14,7 @@ model User {
   email         String?   @unique
   image         String?
   githubUsername String?
+  lastSyncedAt   DateTime? 
   accessToken    String?
   createdAt     DateTime  @default(now())
   repos         Repositories[]
