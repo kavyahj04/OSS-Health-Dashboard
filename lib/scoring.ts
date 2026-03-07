@@ -75,7 +75,7 @@ function scoreDocumentation(contents: any[], description: string | null) : numbe
     if (hasLicense) score += 20
 
     //Check readme file has content
-    const readmeFile = fileNames.find(f => f.name.toLowerCase().startsWith("readme"))
+    const readmeFile = contents.find(f => f.name.toLowerCase().startsWith("readme"))
 
     if(hasReadme && readmeFile.size > 200 ) score += 20
 
