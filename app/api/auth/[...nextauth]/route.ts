@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
-import { syncQueue } from "@/lib/queue";
+import { emailQueue, syncQueue } from "@/lib/queue";
 
 //configure NEXTAUTH and store in handler
 const handler = NextAuth({
@@ -29,42 +29,51 @@ const handler = NextAuth({
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               githubUsername: (profile as any)?.login,
               accessToken: account?.access_token,
-              
+            },
+          });
+        } else {
+          await prisma.user.update({
+            where: { email: user.email! },
+            data: {
+              accessToken: account?.access_token,
             },
           });
         }
-        else{
-            await prisma.user.update({
-                where: { email: user.email! },
-                data: {
-                    accessToken: account?.access_token,
-                }
-            })
-        }
         // Get user either way
         const syncUser = await prisma.user.findUnique({
-        where: { email: user.email! }
-        })
+          where: { email: user.email! },
+        });
 
-         //job scheduling with bullmq to sync repos every 6 hours. We add a job to the queue with the user's ID and access token, and set it to repeat every 6 hours. The jobId ensures that we only have one job per user in the queue at any time.
+        //job scheduling with bullmq to sync repos every 6 hours. We add a job to the queue with the user's ID and access token, and set it to repeat every 6 hours. The jobId ensures that we only have one job per user in the queue at any time.
         await syncQueue.add(
-        "sync-repos",
-        {
+          "sync-repos",
+          {
             userId: syncUser!.id,
             accessToken: account?.access_token,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             githubUsername: (profile as any)?.login,
-        },
-        {
+          },
+          {
             repeat: { every: 6 * 60 * 60 * 1000 },
-            jobId: `sync-${syncUser!.id}`  // unique per user
-        }
-        )
+            jobId: `sync-${syncUser!.id}`, // unique per user
+          },
+        );
+        await emailQueue.add(
+        "weekly-digest",
+        { userId: syncUser!.id },
+        {
+          repeat: {
+            pattern: "0 9 * * 0", // Every Sunday at 9am
+          },
+          jobId: `email-${syncUser!.id}`,
+        },
+      );
         return true;
       } catch (error) {
         console.error("Error Saving Data", error);
         return false;
       }
+      
     },
     async session({ session, token }) {
       return session;
