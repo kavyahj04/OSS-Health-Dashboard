@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { sendWeeklyDigest } from "@/lib/email"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-
+// This API route is designed to send a weekly digest email to the authenticated user, summarizing the health scores of their repositories.
 export async function GET() {
   const session = await getServerSession(authOptions)
 

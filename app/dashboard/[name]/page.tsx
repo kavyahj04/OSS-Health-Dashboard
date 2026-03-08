@@ -148,6 +148,8 @@ function StatCard({
   );
 }
 
+// The RepoDetailPage component is responsible for displaying detailed information about a specific repository,
+//  including its health score breakdown, dependency health, security status, AI-generated suggestions, and top contributors. It fetches the repository data from the API when the component mounts and renders various sections to provide insights into the repository's overall health and areas for improvement.
 export default function RepoDetailPage() {
   const params = useParams();
   const router = useRouter();
