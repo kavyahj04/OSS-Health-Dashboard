@@ -93,3 +93,27 @@ export async function fetchRepoFileTree(accessToken: string, owner: string, repo
         return []
     }
 }
+
+export async function fetchCommitActivity(
+  accessToken: string,
+  owner: string,
+  repo: string
+) {
+  const octokit = getOctokit(accessToken)
+  try {
+    const { data, status } = await octokit.rest.repos.getCommitActivityStats({
+      owner,
+      repo,
+    })
+    // Returns array of 52 weeks
+    // Each week: { week: timestamp, total: count, days: [...] }
+    if (status === 202 || !data || !Array.isArray(data)) {
+      return []
+    }
+
+    return data
+  } catch (error) {
+    return []
+  }
+}
+    

@@ -4,9 +4,10 @@ import {fetchUserRepos,
   fetchRepoPullRequests,
   fetchRepoIssues,
   fetchRepoContent,
-  fetchPackageJson,} from "@/lib/github";
-  import { getServerSession } from "next-auth";
-  import { prisma } from "@/lib/prisma";
+  fetchPackageJson,
+  fetchCommitActivity,} from "@/lib/github";
+import { getServerSession } from "next-auth";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { calculateHealthScore } from "@/lib/scoring";
 import { checkDependencyHealth } from "@/lib/dependencies";
@@ -230,9 +231,32 @@ import { getAISuggestions } from "@/lib/suggestions";
 
   console.log(`${repo.name} → health score: ${score}`)
 
-} catch (error) {
-  console.error(`Health score error for ${repo.name}:`, error)
-}
+            } catch (error) {
+            console.error(`Health score error for ${repo.name}:`, error)
+            }
+
+            try{
+                const activity = await fetchCommitActivity(
+                user.accessToken,
+                repo.owner.login,
+                repo.name
+                )
+
+                await prisma.repositories.update({
+                where: { githubId: repo.id },
+                data: {
+                    commitActivity: Array.isArray(activity) && activity.length > 0
+                                ? activity.slice(-6).map(week => ({
+                                    week: week.week,
+                                    total: week.total,
+                                    }))
+                                : undefined 
+                }
+                })
+            }
+            catch(error){
+            console.error(`Health score error for ${repo.name}:`, error)
+            }
 
 
         }

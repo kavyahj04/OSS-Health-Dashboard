@@ -47,6 +47,8 @@ model Repositories {
   user          User      @relation(fields: [userId], references: [id])
   healthScores  HealthScore[]
   contributors  Contributor[]
+
+  commitActivity    Json?
 }
 
 model HealthScore {
