@@ -170,7 +170,7 @@ export default function RepoDetailPage() {
         className="min-h-screen flex items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, #bfdbfe 0%, #ffffff 40%, #fed7aa 100%)",
+            "linear-gradient(135deg, #bfdbfe 100%)",
         }}
       >
         <div className="text-slate-400">Loading repository...</div>
@@ -205,7 +205,7 @@ export default function RepoDetailPage() {
       className="min-h-screen"
       style={{
         background:
-          "linear-gradient(135deg, #bfdbfe 0%, #ffffff 40%, #fed7aa 100%)",
+          "linear-gradient(135deg, #bfdbfe  100%",
       }}
     >
       {/* NAVBAR */}
