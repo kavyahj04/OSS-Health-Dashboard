@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// This API route generates an SVG badge for a given GitHub repository's health score.
+// It takes the GitHub username and repository name as parameters, 
+// looks up the latest health score for that repository in the database, 
+// and returns an SVG badge with the score and a color indicating the health level (green for good, orange for warning, red for bad). If the repository or score is not found, it returns a badge with "unknown" and a gray color. The badge is cached for 1 hour to improve performance.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ username: string; reponame: string }> },
@@ -48,7 +52,9 @@ export async function GET(
   }
 }
 
-
+// Helper function to generate an SVG badge with the given score and color.
+// The badge has a fixed width and height, with the left side displaying "OSS Health" and the right side displaying the score. 
+// The colors indicate the health level, and the badge is designed to be visually appealing and easy to read.
 function badgeSVG(score: string, color: string) {
   const leftWidth = 110
   const rightWidth = 60

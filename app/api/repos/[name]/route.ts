@@ -1,3 +1,7 @@
+// This API route handles GET requests to fetch detailed information about a specific repository for the authenticated user.
+// It takes the repository name as a parameter, checks if the user is authenticated, and then queries the database for the repository that matches the given name and belongs to the authenticated user. 
+// If found, it returns the repository details along with the latest health score and top contributors. If not found or if there's an error, it returns an appropriate error message.
+
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"

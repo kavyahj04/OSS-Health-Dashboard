@@ -1,30 +1,27 @@
-import { Resend } from "resend"
+import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 type RepoSummary = {
-  name: string
-  score: number
-  previousScore?: number
-  suggestions: string[]
-}
+  name: string;
+  score: number;
+  previousScore?: number;
+  suggestions: string[];
+};
 
 export async function sendWeeklyDigest(
   toEmail: string,
   userName: string,
-  repos: RepoSummary[]
+  repos: RepoSummary[],
 ) {
-  const topRepos = repos.sort((a, b) => b.score - a.score).slice(0, 5)
+  const topRepos = repos.sort((a, b) => b.score - a.score).slice(0, 5);
 
   const avgScore = Math.round(
-    repos.reduce((sum, r) => sum + r.score, 0) / repos.length
-  )
+    repos.reduce((sum, r) => sum + r.score, 0) / repos.length,
+  );
 
-  const avgColor = avgScore >= 70
-    ? "#16a34a"
-    : avgScore >= 40
-    ? "#f97316"
-    : "#dc2626"
+  const avgColor =
+    avgScore >= 70 ? "#16a34a" : avgScore >= 40 ? "#f97316" : "#dc2626";
 
   const html = `
 <!DOCTYPE html>
@@ -96,16 +93,19 @@ export async function sendWeeklyDigest(
           <tr>
             <td style="padding:0 32px 24px;">
               <table width="100%" cellpadding="0" cellspacing="0">
-                ${topRepos.map(repo => {
-                  const color = repo.score >= 70
-                    ? "#16a34a"
-                    : repo.score >= 40
-                    ? "#f97316"
-                    : "#dc2626"
-                  const change = repo.previousScore != null
-                    ? repo.score - repo.previousScore
-                    : null
-                  return `
+                ${topRepos
+                  .map((repo) => {
+                    const color =
+                      repo.score >= 70
+                        ? "#16a34a"
+                        : repo.score >= 40
+                          ? "#f97316"
+                          : "#dc2626";
+                    const change =
+                      repo.previousScore != null
+                        ? repo.score - repo.previousScore
+                        : null;
+                    return `
                   <tr>
                     <td style="padding-bottom:8px;">
                       <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8faff; border:1px solid #e2e8f0; border-radius:8px;">
@@ -114,15 +114,19 @@ export async function sendWeeklyDigest(
                             <div style="font-weight:600; color:#1e293b; font-size:14px;">
                               ${repo.name}
                             </div>
-                            ${change !== null ? `
+                            ${
+                              change !== null
+                                ? `
                             <div style="font-size:12px; color:${change >= 0 ? "#16a34a" : "#dc2626"}; margin-top:4px;">
                               ${change >= 0 ? "↑" : "↓"} ${Math.abs(change)} points from last week
                             </div>
-                            ` : `
+                            `
+                                : `
                             <div style="font-size:12px; color:#94a3b8; margin-top:4px;">
                               First scan this week
                             </div>
-                            `}
+                            `
+                            }
                           </td>
                           <td style="padding:14px 16px; text-align:right; vertical-align:middle;">
                             <div style="font-size:24px; font-weight:700; color:${color};">
@@ -133,8 +137,9 @@ export async function sendWeeklyDigest(
                       </table>
                     </td>
                   </tr>
-                  `
-                }).join("")}
+                  `;
+                  })
+                  .join("")}
               </table>
             </td>
           </tr>
@@ -153,9 +158,10 @@ export async function sendWeeklyDigest(
             <td style="padding:0 32px 32px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 ${repos
-                  .flatMap(r => r.suggestions)
+                  .flatMap((r) => r.suggestions)
                   .slice(0, 3)
-                  .map(s => `
+                  .map(
+                    (s) => `
                   <tr>
                     <td style="padding-bottom:8px;">
                       <table width="100%" cellpadding="0" cellspacing="0">
@@ -167,7 +173,9 @@ export async function sendWeeklyDigest(
                       </table>
                     </td>
                   </tr>
-                  `).join("")}
+                  `,
+                  )
+                  .join("")}
               </table>
             </td>
           </tr>
@@ -188,12 +196,12 @@ export async function sendWeeklyDigest(
 
 </body>
 </html>
-  `
+  `;
 
   await resend.emails.send({
     from: "OSS Health Tracker <onboarding@resend.dev>",
     to: toEmail,
     subject: `📊 Your Weekly Repo Health Digest — Avg Score: ${avgScore}`,
     html,
-  })
+  });
 }

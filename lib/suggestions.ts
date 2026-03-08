@@ -4,21 +4,22 @@ import { DependencyResult } from "./dependencies";
 import { SecurityResult } from "./security";
 
 const openai = new OpenAI({
-    apiKey : process.env.OPENAI_API_KEY
-})
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export type SuggestionsResult = {
-    suggestions : string[]
-}
+  suggestions: string[];
+};
 
+// Generates AI-driven suggestions for improving repository health based on the overall health score, signal breakdown, dependency health, and security status. It constructs a detailed prompt with all relevant data and sends it to the OpenAI API to receive specific, actionable improvement suggestions. If the API call fails for any reason, it falls back to generating suggestions based on simple heuristics derived from the weakest signals in the breakdown and any critical issues in dependencies or security.
 export async function getAISuggestions(
-    repoName: string,
-    score: number,
-    breakdown: ScoreBreakdown,
-    dependencies: DependencyResult,
-    security: SecurityResult
-):  Promise<SuggestionsResult> {
-try{
+  repoName: string,
+  score: number,
+  breakdown: ScoreBreakdown,
+  dependencies: DependencyResult,
+  security: SecurityResult,
+): Promise<SuggestionsResult> {
+  try {
     const prompt = `
                     You are a GitHub repository health advisor.
                     Analyze this repository health data and give exactly 3 specific, actionable improvement suggestions.
@@ -51,61 +52,76 @@ try{
                     - Keep each suggestion under 20 words
                     - Return as JSON array of strings like: ["suggestion1", "suggestion2", "suggestion3"]
                     - Return ONLY the JSON array, nothing else
-`
+`;
 
+    // Call OpenAI API with the constructed prompt
     const result = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 300,
-        temperature: 0.7,//0.7 → balanced, good for suggestions
-    })
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 300,
+      temperature: 0.7, //0.7 → balanced, good for suggestions
+    });
 
     // Extract the text response
-    const content = result.choices[0].message.content ?? "[]"
+    const content = result.choices[0].message.content ?? "[]";
 
     // Parse JSON array from response
-    const suggestions = JSON.parse(content)
+    const suggestions = JSON.parse(content);
 
-    return { suggestions }
-}
-catch(error)
-{
+    return { suggestions };
+  } catch (error) {
     return {
-      suggestions: generateFallbackSuggestions(breakdown, dependencies, security)
-    }
-}
+      suggestions: generateFallbackSuggestions(
+        breakdown,
+        dependencies,
+        security,
+      ),
+    };
+  }
 }
 
 function generateFallbackSuggestions(
   breakdown: ScoreBreakdown,
   dependencies: DependencyResult,
-  security: SecurityResult
+  security: SecurityResult,
 ): string[] {
-  const suggestions: string[] = []
+  const suggestions: string[] = [];
 
   if (breakdown.commitRecency < 50) {
-    suggestions.push("⏰ Repo hasn't been updated recently — push a commit or archive it")
+    suggestions.push(
+      "⏰ Repo hasn't been updated recently — push a commit or archive it",
+    );
   }
 
   if (breakdown.documentation < 50) {
-    suggestions.push("📝 Add or improve your README with installation and usage sections")
+    suggestions.push(
+      "📝 Add or improve your README with installation and usage sections",
+    );
   }
 
   if (breakdown.repoStructure < 50) {
-    suggestions.push("🔧 Add a .gitignore and GitHub Actions workflow to improve structure")
+    suggestions.push(
+      "🔧 Add a .gitignore and GitHub Actions workflow to improve structure",
+    );
   }
 
   if (dependencies.vulnerableCount > 0) {
-    suggestions.push(`🔒 Fix ${dependencies.vulnerableCount} vulnerable dependencies — run npm audit fix`)
+    suggestions.push(
+      `🔒 Fix ${dependencies.vulnerableCount} vulnerable dependencies — run npm audit fix`,
+    );
   }
 
   if (dependencies.outdatedCount > 0) {
-    suggestions.push(`📦 Update ${dependencies.outdatedCount} outdated packages to latest versions`)
+    suggestions.push(
+      `📦 Update ${dependencies.outdatedCount} outdated packages to latest versions`,
+    );
   }
   if (security.secretsFound.length > 0) {
-    suggestions.push("🚨 Secrets detected in repo — rotate exposed keys immediately")
+    suggestions.push(
+      "🚨 Secrets detected in repo — rotate exposed keys immediately",
+    );
   }
 
   // Return max 3 suggestions
-  return suggestions.slice(0, 3)
+  return suggestions.slice(0, 3);
 }

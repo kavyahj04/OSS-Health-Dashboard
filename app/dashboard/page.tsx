@@ -116,6 +116,7 @@ function formatWeek(timestamp: number) {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+// The DashboardPage component is the main landing page for the OSS Health Tracker application. It displays an overview of the user's repositories, including their health scores, commit activity, and other relevant statistics. The page fetches the repository data from the API when it mounts and provides a sync button to allow users to manually trigger a data refresh. The repositories are displayed in a grid format, sorted by their health scores, with visual indicators for their overall health status and signal breakdowns.
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();

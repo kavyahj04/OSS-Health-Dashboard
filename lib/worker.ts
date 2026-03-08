@@ -1,3 +1,10 @@
+// This file defines two workers using the BullMQ library: 
+// one for synchronizing repository data from GitHub and calculating health scores, 
+// and another for sending weekly email digests to users. 
+// The sync worker fetches various metrics about the user's repositories, calculates a health score based on those metrics, 
+// checks dependencies and security, and saves everything to the database. 
+// The email worker retrieves the latest health scores for the user's repositories and sends a summary email with suggestions for improvement.
+
 import { Worker } from "bullmq";
 import { prisma } from "@/lib/prisma";
 import { redisConnection } from "@/lib/queue";
@@ -17,6 +24,13 @@ import { calculateHealthScore } from "./scoring";
 import { checkDependencyHealth } from "./dependencies";
 import { getAISuggestions } from "./suggestions";
 import { scanSecurity } from "./security";
+
+
+// The createSyncWorker function sets up a worker that listens to the "repo-sync" queue.
+// When a job is added to this queue, the worker executes a function that takes the user's ID, access token, and GitHub username as input.
+// It then fetches all repositories for that user from GitHub, and for each repository, it gathers various metrics such as contributors, commits, pull requests, and issues.
+// It calculates a health score for each repository based on these metrics, checks the dependency health and security status, and generates AI-driven suggestions for improvement.
+// Finally, it saves all this information to the database and updates the user's last synced time. The worker also logs progress and handles errors gracefully.
 
 export function createSyncWorker() {
   //creates a worker that listens to repo-sync
@@ -284,6 +298,11 @@ export function createSyncWorker() {
   return worker;
 }
 
+// The createEmailWorker function sets up a worker that listens to the "weekly-email" queue.
+// When a job is added to this queue, the worker executes a function that takes the user's ID as input.
+// It retrieves the user's email and all their repositories along with the latest health scores from the database.
+// It then compiles a summary of each repository's health score, previous score for comparison, and suggestions for improvement.
+// Finally, it sends a weekly digest email to the user with this information and logs the action.
 export function createEmailWorker() {
   const worker = new Worker(
     "weekly-email",
