@@ -13,11 +13,13 @@ import { calculateHealthScore } from "@/lib/scoring";
 import { checkDependencyHealth } from "@/lib/dependencies";
 import { scanSecurity } from "@/lib/security";
 import { getAISuggestions } from "@/lib/suggestions";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+
 
   export async function POST() {
     try{
         //getServerSession() returns the current logged in user
-        const session = await getServerSession();
+        const session = await getServerSession(authOptions);
 
         if(!session?.user?.email)
         {

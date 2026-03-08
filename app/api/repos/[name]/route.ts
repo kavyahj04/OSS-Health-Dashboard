@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function GET(
   request: Request,
@@ -11,7 +12,7 @@ export async function GET(
     const repoName = decodeURIComponent(name)
 
     console.log("Looking for repo:", repoName)
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
 
     if (!session?.user?.email) {
       return NextResponse.json(

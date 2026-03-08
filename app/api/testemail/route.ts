@@ -2,9 +2,11 @@ import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { sendWeeklyDigest } from "@/lib/email"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+
 
 export async function GET() {
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })

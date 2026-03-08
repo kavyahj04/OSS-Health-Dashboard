@@ -1,24 +1,24 @@
-import NextAuth from "next-auth";
-import GithubProvider from "next-auth/providers/github";
-import { prisma } from "@/lib/prisma";
-import { emailQueue, syncQueue } from "@/lib/queue";
+import NextAuth, { AuthOptions } from "next-auth"
+import GithubProvider from "next-auth/providers/github"
+import { prisma } from "@/lib/prisma"
+import { emailQueue, syncQueue } from "@/lib/queue"
 
-//configure NEXTAUTH and store in handler
-const handler = NextAuth({
-  //supported logins
+export const authOptions: AuthOptions = {
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: { scope: "read:user user:email repo" }
+      }
     }),
   ],
   callbacks: {
-    //this callback is called whenever a user logs in. We can use it to store additional information about the user in the session.
     async signIn({ user, account, profile }) {
       try {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! },
-        });
+        })
 
         if (!existingUser) {
           await prisma.user.create({
@@ -30,21 +30,20 @@ const handler = NextAuth({
               githubUsername: (profile as any)?.login,
               accessToken: account?.access_token,
             },
-          });
+          })
         } else {
           await prisma.user.update({
             where: { email: user.email! },
             data: {
               accessToken: account?.access_token,
             },
-          });
+          })
         }
-        // Get user either way
+
         const syncUser = await prisma.user.findUnique({
           where: { email: user.email! },
-        });
+        })
 
-        //job scheduling with bullmq to sync repos every 6 hours. We add a job to the queue with the user's ID and access token, and set it to repeat every 6 hours. The jobId ensures that we only have one job per user in the queue at any time.
         await syncQueue.add(
           "sync-repos",
           {
@@ -55,30 +54,34 @@ const handler = NextAuth({
           },
           {
             repeat: { every: 6 * 60 * 60 * 1000 },
-            jobId: `sync-${syncUser!.id}`, // unique per user
-          },
-        );
+            jobId: `sync-${syncUser!.id}`,
+          }
+        )
+
         await emailQueue.add(
-        "weekly-digest",
-        { userId: syncUser!.id },
-        {
-          repeat: {
-            pattern: "0 9 * * 0", // Every Sunday at 9am
-          },
-          jobId: `email-${syncUser!.id}`,
-        },
-      );
-        return true;
+          "weekly-digest",
+          { userId: syncUser!.id },
+          {
+            repeat: {
+              pattern: "0 9 * * 0",
+            },
+            jobId: `email-${syncUser!.id}`,
+          }
+        )
+
+        return true
       } catch (error) {
-        console.error("Error Saving Data", error);
-        return false;
+        console.error("Error Saving Data", error)
+        return false
       }
-      
     },
-    async session({ session, token }) {
-      return session;
+
+    async session({ session }) {
+      return session
     },
   },
-});
+  secret: process.env.NEXTAUTH_SECRET,
+}
 
-export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }
