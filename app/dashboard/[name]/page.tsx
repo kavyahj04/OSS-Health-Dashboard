@@ -169,8 +169,7 @@ export default function RepoDetailPage() {
       <main
         className="min-h-screen flex items-center justify-center"
         style={{
-          background:
-            "linear-gradient(135deg, #bfdbfe 100%)",
+          background: "linear-gradient(135deg, #bfdbfe 100%)",
         }}
       >
         <div className="text-slate-400">Loading repository...</div>
@@ -204,21 +203,29 @@ export default function RepoDetailPage() {
     <main
       className="min-h-screen"
       style={{
-        background:
-          "linear-gradient(135deg, #bfdbfe  100%",
+        background: "linear-gradient(135deg, #bfdbfe  100%",
       }}
     >
-      {/* NAVBAR */}
-      <nav className="bg-blue-600 px-8 py-4 flex items-center justify-between">
-        <span className="text-white font-bold text-lg tracking-wide">
-          OSS Health Tracker
-        </span>
+      <nav
+        style={{
+          background: "#4338ca",
+          borderBottom: "1px solid #3730a3",
+          padding: "16px 32px",
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          alignItems: "center",
+        }}
+      >
         <button
           onClick={() => router.push("/dashboard")}
-          className="text-blue-200 hover:text-white text-sm transition cursor-pointer"
+          style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", background: "none", border: "none", textAlign: "left" }}
         >
           ← Back to Dashboard
         </button>
+        <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 17, letterSpacing: 0.5, textAlign: "center" }}>
+          🔍 OSS Health Tracker
+        </span>
+        <div />
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
@@ -473,11 +480,11 @@ export default function RepoDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <div className="text-2xl mb-1">✅</div>
-                    <div className="text-xs text-slate-500">
+                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mt-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-sm text-green-700 font-medium">
                       No secrets detected
-                    </div>
+                    </span>
                   </div>
                 )}
               </div>
