@@ -2,10 +2,16 @@ import {fetchUserRepos,
   fetchRepoContributors,
   fetchRepoCommits,
   fetchRepoPullRequests,
-  fetchRepoIssues,} from "@/lib/github";
+  fetchRepoIssues,
+  fetchRepoContent,
+  fetchPackageJson,} from "@/lib/github";
   import { getServerSession } from "next-auth";
   import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { calculateHealthScore } from "@/lib/scoring";
+import { checkDependencyHealth } from "@/lib/dependencies";
+import { scanSecurity } from "@/lib/security";
+import { getAISuggestions } from "@/lib/suggestions";
 
   export async function POST() {
     try{
@@ -161,6 +167,74 @@ import { NextResponse } from "next/server";
             catch(error){
                 console.error(`Error syncying ${repo.name}: `, error)
             }
+
+            // Calculate and store health score
+            try{
+                //fetcts repo content
+                const contents = await fetchRepoContent(user.accessToken, repo.owner.login, repo.name)
+
+                //fetches package json in decoded format and converts to string
+                const packageJson = await fetchPackageJson(user.accessToken, repo.owner.login, repo.name)
+
+                const repoData = await prisma.repositories.findUnique({
+                                    where: { githubId: repo.id }
+                                })
+                
+                if(!repoData) continue
+                
+                const { score, breakdown } = calculateHealthScore(
+                                                        {
+                                                        lastCommitDate: repoData.lastCommitDate,
+                                                        totalCommits: repoData.totalCommits,
+                                                        openIssues: repoData.openIssues,
+                                                        totalIssues: repoData.totalIssues,
+                                                        avgPRMergeTime: repoData.avgPRMergeTime,
+                                                        totalPRs: repoData.totalPRs,
+                                                        stars: repoData.stars,
+                                                        description: repoData.description,
+                                                        },
+                                                        contents
+                                                    )
+                
+                // Check dependency health
+                const dependencyResult = await checkDependencyHealth(packageJson)
+
+                // Scan security
+                const securityResult = await scanSecurity(user.accessToken, repo.owner.login, repo.name)
+
+                // Get AI suggestions
+                const { suggestions } = await getAISuggestions(repo.name, score, breakdown, dependencyResult, securityResult)
+                
+                // Save everything to HealthScore table
+                await prisma.healthScore.create({
+                    data: {
+                            score,
+                            breakdown,
+                            suggestions,
+                            vulnerabilities: dependencyResult.vulnerabilities,
+                            dependencyData: {
+                            totalDependencies: dependencyResult.totalDependencies,
+                            outdatedCount: dependencyResult.outdatedCount,
+                            vulnerableCount: dependencyResult.vulnerableCount,
+                            outdatedPackages: dependencyResult.outdatedPackages,
+                            dependencyScore: dependencyResult.dependencyScore,
+                    },
+                    securityData: {
+                        riskLevel: securityResult.riskLevel,
+                        securityScore: securityResult.securityScore,
+                        secretsFound: securityResult.secretsFound,
+                    },
+                    repoId: repoData.id,
+                    }
+                })
+
+  console.log(`${repo.name} → health score: ${score}`)
+
+} catch (error) {
+  console.error(`Health score error for ${repo.name}:`, error)
+}
+
+
         }
         await prisma.user.update({
             where: { id: user.id },

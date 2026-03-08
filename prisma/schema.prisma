@@ -50,12 +50,16 @@ model Repositories {
 }
 
 model HealthScore {
-  id          String    @id @default(cuid())
-  score       Float
-  breakdown   Json
-  calculatedAt DateTime @default(now())
-  repoId      String
-  repo        Repositories      @relation(fields: [repoId], references: [id])
+  id              String   @id @default(cuid())
+  score           Float
+  breakdown       Json
+  suggestions     Json
+  vulnerabilities Json
+  dependencyData  Json
+  securityData    Json
+  calculatedAt    DateTime @default(now())
+  repoId          String
+  repo            Repositories     @relation(fields: [repoId], references: [id])
 }
 
 model Contributor {
@@ -65,3 +69,4 @@ model Contributor {
   repoId         String
   repo           Repositories    @relation(fields: [repoId], references: [id])
 }
+
