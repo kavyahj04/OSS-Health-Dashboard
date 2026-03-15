@@ -31,22 +31,22 @@ function scoreCommitActivity(totalCommits: number): number {
   return 10;
 }
 
-//Signal-3 - Issue Management
-function scoreIssueManagement(openIssues: number, totalIssues: number): number {
-  if (totalIssues === 0) return 50;
+//Signal-3 - Issue Management 
+function scoreIssueManagement(openIssues: number, totalIssues: number) : number {
+    if (totalIssues === 0) return 70
 
-  const openRatio = openIssues / totalIssues;
+    const openRatio = openIssues / totalIssues
 
-  if (openRatio === 0) return 100;
-  if (openRatio < 0.25) return 80;
-  if (openRatio < 0.5) return 60;
-  if (openRatio < 0.75) return 30;
-  return 10;
+    if (openRatio === 0)    return 100
+    if (openRatio < 0.25)   return 80
+    if (openRatio < 0.50)   return 60
+    if (openRatio < 0.75)   return 30
+    return 10
 }
 
-//Signal-4 - PR Health
-function scorePRHealth(avgPRMergeTime: number, totalPRs: number): number {
-  if (totalPRs === 0) return 50;
+//Signal-4 - PR Health 
+function scorePRHealth(avgPRMergeTime: number, totalPRs: number): number{
+    if (totalPRs === 0) return 70
 
   // avgPRMergeTime is stored in hours
   if (avgPRMergeTime < 24) return 100; // less than 1 day
