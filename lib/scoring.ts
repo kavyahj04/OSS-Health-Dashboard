@@ -23,11 +23,11 @@ function scoreCommitRecency(lastCommitDate: Date | null): number {
 
 //Signal-2 - Commit Activity
 function scoreCommitActivity(totalCommits: number): number {
-  if (totalCommits >= 50) return 100;
-  if (totalCommits >= 30) return 80;
-  if (totalCommits >= 20) return 60;
-  if (totalCommits >= 10) return 40;
-  if (totalCommits >= 6) return 20;
+  if (totalCommits >= 20) return 100;
+  if (totalCommits >= 15) return 80;
+  if (totalCommits >= 10) return 60;
+  if (totalCommits >= 5)  return 40;
+  if (totalCommits >= 2)  return 20;
   return 10;
 }
 
