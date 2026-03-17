@@ -19,6 +19,7 @@ export async function fetchUserRepos(accessToken: string) {
   const { data: repos } = await octokit.rest.repos.listForAuthenticatedUser({
     sort: "updated", //most recent updated will come first
     per_page: 100, //100 repos per page request
+    type: "owner",
   });
   return repos;
 }
