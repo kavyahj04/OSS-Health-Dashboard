@@ -361,7 +361,7 @@ export default function RepoDetailPage() {
                               {item.label}
                             </span>
                             <span className="text-xs text-slate-400 ml-2">
-                              — {item.what}
+                               {item.what}
                             </span>
                           </div>
                         </div>
