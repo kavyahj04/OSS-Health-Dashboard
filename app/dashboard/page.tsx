@@ -273,7 +273,7 @@ export default function DashboardPage() {
         {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 mb-1">
-            Welcome back, {session?.user?.name?.split(" ")[0]} 👋
+            Welcome, {session?.user?.name?.split(" ")[0]} 👋
           </h1>
           <p className="text-slate-500 text-sm">
             Last synced: {formatLastSynced(lastSyncedAt)}
