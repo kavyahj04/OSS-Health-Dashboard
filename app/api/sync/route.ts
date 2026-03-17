@@ -303,10 +303,20 @@ export async function POST() {
     }
 
     // After syncing all repositories, we update the user's last synced time in the database and return a success response with the count of synced repositories.
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastSyncedAt: new Date() },
-    });
+    // Delete repos that no longer exist on GitHub
+const githubRepoIds = githubRepos.map((r) => r.id);
+await prisma.repositories.deleteMany({
+  where: {
+    userId: user.id,
+    githubId: { notIn: githubRepoIds },
+  },
+});
+
+// After syncing all repositories, we update the user's last synced time
+await prisma.user.update({
+  where: { id: user.id },
+  data: { lastSyncedAt: new Date() },
+});
 
     return NextResponse.json({
       success: true,
