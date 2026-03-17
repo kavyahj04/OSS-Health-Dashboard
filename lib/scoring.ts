@@ -71,19 +71,17 @@ function scoreDocumentation(
   // README exists
   const hasReadme = fileNames.some((f) => f.startsWith("readme"));
 
-  if (hasReadme) score += 40;
+  if (hasReadme) score += 50;
 
-  const hasLicense = fileNames.some((f) => f.startsWith("license"));
-  if (hasLicense) score += 20;
 
   //Check readme file has content
   const readmeFile = contents.find((f) =>
     f.name.toLowerCase().startsWith("readme"),
   );
 
-  if (hasReadme && readmeFile.size > 200) score += 20;
+  if (hasReadme && readmeFile.size > 200) score += 25;
 
-  if (description && description.trim().length > 0) score += 20;
+  if (description && description.trim().length > 0) score += 25;
 
   return score;
 }
