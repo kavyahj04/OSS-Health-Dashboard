@@ -16,7 +16,7 @@ import {
   fetchRepoIssues,
   fetchRepoContent,
   fetchPackageJson,
-  fetchCommitActivity,
+  computeCommitActivity,
 } from "@/lib/github";
 import { sendWeeklyDigest } from "@/lib/email";
 import { emailQueue } from "@/lib/queue";
@@ -102,7 +102,11 @@ export function createSyncWorker() {
 
           await prisma.repositories.update({
             where: { githubId: repo.id },
-            data: { totalCommits, lastCommitDate },
+            data: {
+              totalCommits,
+              lastCommitDate,
+              commitActivity: computeCommitActivity(commits),
+            },
           });
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
@@ -248,28 +252,6 @@ export function createSyncWorker() {
           });
 
           console.log(`${repo.name} → health score: ${score}`);
-        } catch (error) {
-          console.error(`Health score error for ${repo.name}:`, error);
-        }
-        try {
-          const activity = await fetchCommitActivity(
-            accessToken,
-            repo.owner.login,
-            repo.name,
-          );
-
-          await prisma.repositories.update({
-            where: { githubId: repo.id },
-            data: {
-              commitActivity:
-                Array.isArray(activity) && activity.length > 0
-                  ? activity.slice(-6).map((week) => ({
-                      week: week.week,
-                      total: week.total,
-                    }))
-                  : undefined,
-            },
-          });
         } catch (error) {
           console.error(`Health score error for ${repo.name}:`, error);
         }

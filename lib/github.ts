@@ -161,26 +161,29 @@ export async function fetchRepoFileTree(
   }
 }
 
-// fetches the commit activity for a given repository, which includes the number of commits made each week for the past year, by making an API call to the GitHub REST endpoint for getting commit activity stats. If the data is not ready or an error occurs, it returns an empty array.
-export async function fetchCommitActivity(
-  accessToken: string,
-  owner: string,
-  repo: string,
+// buckets an already-fetched list of commits into weekly totals for the last 6 weeks.
+// GitHub's /stats/commit_activity endpoint computes its cache asynchronously and returns
+// a 202 (with no data) until it's warm, which made commit activity unreliable. Deriving it
+// from the commits we already fetch avoids that entirely.
+export function computeCommitActivity(
+  commits: { commit: { author?: { date?: string | null } | null } }[],
 ) {
-  const octokit = getOctokit(accessToken);
-  try {
-    const { data, status } = await octokit.rest.repos.getCommitActivityStats({
-      owner,
-      repo,
-    });
-    // Returns array of 52 weeks
-    // Each week: { week: timestamp, total: count, days: [...] }
-    if (status === 202 || !data || !Array.isArray(data)) {
-      return [];
-    }
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
 
-    return data;
-  } catch (error) {
-    return [];
+  const weeks = Array.from({ length: 6 }, (_, i) => ({
+    week: Math.floor((now - (5 - i) * weekMs) / 1000),
+    total: 0,
+  }));
+
+  for (const { commit } of commits) {
+    const dateStr = commit.author?.date;
+    if (!dateStr) continue;
+
+    const weeksAgo = Math.floor((now - new Date(dateStr).getTime()) / weekMs);
+    const index = 5 - weeksAgo;
+    if (index >= 0 && index < 6) weeks[index].total += 1;
   }
+
+  return weeks;
 }

@@ -6,7 +6,7 @@ import {
   fetchRepoIssues,
   fetchRepoContent,
   fetchPackageJson,
-  fetchCommitActivity,
+  computeCommitActivity,
 } from "@/lib/github";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
@@ -117,6 +117,7 @@ export async function POST() {
           data: {
             totalCommits,
             lastCommitDate,
+            commitActivity: computeCommitActivity(commits),
           },
         });
 
@@ -277,29 +278,6 @@ export async function POST() {
         console.error(`Health score error for ${repo.name}:`, error);
       }
 
-      try {
-        // Fetch commit activity for the past year and store it in the database. This data can be used to analyze trends in commit activity over time.
-        const activity = await fetchCommitActivity(
-          user.accessToken,
-          repo.owner.login,
-          repo.name,
-        );
-
-        await prisma.repositories.update({
-          where: { githubId: repo.id },
-          data: {
-            commitActivity:
-              Array.isArray(activity) && activity.length > 0
-                ? activity.slice(-6).map((week) => ({
-                    week: week.week,
-                    total: week.total,
-                  }))
-                : undefined,
-          },
-        });
-      } catch (error) {
-        console.error(`Health score error for ${repo.name}:`, error);
-      }
     }
 
     // After syncing all repositories, we update the user's last synced time in the database and return a success response with the count of synced repositories.

@@ -33,7 +33,7 @@ function scoreCommitActivity(totalCommits: number): number {
 
 //Signal-3 - Issue Management
 function scoreIssueManagement(openIssues: number, totalIssues: number): number {
-  if (totalIssues === 0) return 50;
+  if (totalIssues === 0) return 90;
 
   const openRatio = openIssues / totalIssues;
 
@@ -46,7 +46,7 @@ function scoreIssueManagement(openIssues: number, totalIssues: number): number {
 
 //Signal-4 - PR Health
 function scorePRHealth(avgPRMergeTime: number, totalPRs: number): number {
-  if (totalPRs === 0) return 50;
+  if (totalPRs === 0) return 90;
 
   // avgPRMergeTime is stored in hours
   if (avgPRMergeTime < 24) return 100; // less than 1 day
