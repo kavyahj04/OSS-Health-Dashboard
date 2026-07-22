@@ -23,11 +23,11 @@ function scoreCommitRecency(lastCommitDate: Date | null): number {
 
 //Signal-2 - Commit Activity
 function scoreCommitActivity(totalCommits: number): number {
-  if (totalCommits >= 50) return 100;
-  if (totalCommits >= 30) return 80;
-  if (totalCommits >= 20) return 60;
-  if (totalCommits >= 10) return 40;
-  if (totalCommits >= 6) return 20;
+  if (totalCommits >= 20) return 100;
+  if (totalCommits >= 15) return 80;
+  if (totalCommits >= 10) return 60;
+  if (totalCommits >= 5)  return 40;
+  if (totalCommits >= 2)  return 20;
   return 10;
 }
 
@@ -35,13 +35,13 @@ function scoreCommitActivity(totalCommits: number): number {
 function scoreIssueManagement(openIssues: number, totalIssues: number): number {
   if (totalIssues === 0) return 90;
 
-  const openRatio = openIssues / totalIssues;
+    const openRatio = openIssues / totalIssues
 
-  if (openRatio === 0) return 100;
-  if (openRatio < 0.25) return 80;
-  if (openRatio < 0.5) return 60;
-  if (openRatio < 0.75) return 30;
-  return 10;
+    if (openRatio === 0)    return 100
+    if (openRatio < 0.25)   return 80
+    if (openRatio < 0.50)   return 60
+    if (openRatio < 0.75)   return 30
+    return 10
 }
 
 //Signal-4 - PR Health
@@ -71,19 +71,17 @@ function scoreDocumentation(
   // README exists
   const hasReadme = fileNames.some((f) => f.startsWith("readme"));
 
-  if (hasReadme) score += 40;
+  if (hasReadme) score += 50;
 
-  const hasLicense = fileNames.some((f) => f.startsWith("license"));
-  if (hasLicense) score += 20;
 
   //Check readme file has content
   const readmeFile = contents.find((f) =>
     f.name.toLowerCase().startsWith("readme"),
   );
 
-  if (hasReadme && readmeFile.size > 200) score += 20;
+  if (hasReadme && readmeFile.size > 200) score += 25;
 
-  if (description && description.trim().length > 0) score += 20;
+  if (description && description.trim().length > 0) score += 25;
 
   return score;
 }

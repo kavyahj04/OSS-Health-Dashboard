@@ -176,17 +176,15 @@ export default function DashboardPage() {
     (r) => r.healthScores[0].score < 70,
   ).length;
 
-  // Aggregate commit activity across all repos for chart
   const commitChartData = (() => {
     const reposWithActivity = repos.filter(
       (r) => r.commitActivity && r.commitActivity.length > 0,
     );
     if (reposWithActivity.length === 0) return [];
 
-    // Use first repo's weeks as base timestamps
     const baseWeeks = reposWithActivity[0].commitActivity!;
 
-    return baseWeeks.map((week, i) => {
+    const allWeeks = baseWeeks.map((week, i) => {
       const total = reposWithActivity.reduce((sum, repo) => {
         return sum + (repo.commitActivity?.[i]?.total ?? 0);
       }, 0);
@@ -195,6 +193,12 @@ export default function DashboardPage() {
         commits: total,
       };
     });
+
+    // Show last 8 weeks, drop the current incomplete week if it's 0
+    const recent = allWeeks.slice(-8);
+    const last = recent[recent.length - 1];
+    if (last && last.commits === 0) recent.pop();
+    return recent;
   })();
 
   return (
@@ -269,7 +273,7 @@ export default function DashboardPage() {
         {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 mb-1">
-            Welcome back, {session?.user?.name?.split(" ")[0]} 👋
+            Welcome, {session?.user?.name?.split(" ")[0]} 👋
           </h1>
           <p className="text-slate-500 text-sm">
             Last synced: {formatLastSynced(lastSyncedAt)}
