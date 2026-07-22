@@ -23,10 +23,9 @@ function scoreCommitRecency(lastCommitDate: Date | null): number {
 
 //Signal-2 - Commit Activity
 function scoreCommitActivity(totalCommits: number): number {
-  if (totalCommits >= 20) return 100;
-  if (totalCommits >= 15) return 80;
-  if (totalCommits >= 10) return 60;
-  if (totalCommits >= 5)  return 40;
+  if (totalCommits >= 30) return 100;
+  if (totalCommits >= 20) return 90;
+  if (totalCommits >= 5)  return 60;
   if (totalCommits >= 2)  return 20;
   return 10;
 }
@@ -111,15 +110,15 @@ function scoreRepoStructure(contents: any[]): number {
 
 //Signal- 7 - Popularity
 
-function scorePopularity(stars: number): number {
-  if (stars >= 1000) return 100;
-  if (stars >= 500) return 90;
-  if (stars >= 100) return 70;
-  if (stars >= 50) return 50;
-  if (stars >= 10) return 30;
-
-  return 10;
-}
+// function scorePopularity(stars: number): number {
+//   if (stars >= 1000) return 100;
+//   if (stars >= 500) return 90;
+//   if (stars >= 100) return 70;
+//   if (stars >= 50) return 50;
+//   if (stars >= 10) return 30;
+//
+//   return 10;
+// }
 
 export type ScoreBreakdown = {
   commitRecency: number;
@@ -160,7 +159,8 @@ export function calculateHealthScore(
   const prHealth = scorePRHealth(repo.avgPRMergeTime, repo.totalPRs);
   const documentation = scoreDocumentation(contents, repo.description);
   const repoStructure = scoreRepoStructure(contents);
-  const popularity = scorePopularity(repo.stars);
+  // const popularity = scorePopularity(repo.stars);
+  const popularity = 0;
 
   //Apply Weights
   const final = Math.round(
@@ -168,9 +168,9 @@ export function calculateHealthScore(
       commitActivity * 0.2 +
       issueManagement * 0.15 +
       prHealth * 0.15 +
-      documentation * 0.15 +
-      repoStructure * 0.1 +
-      popularity * 0.05,
+      documentation * 0.2 +
+      repoStructure * 0.1,
+      // popularity * 0.05,
   );
 
   return {
