@@ -74,7 +74,9 @@ function ScoreCircle({ score }: { score: number }) {
 }
 
 function SignalBars({ breakdown }: { breakdown: HealthScore["breakdown"] }) {
-  const signals = Object.values(breakdown);
+  // const signals = Object.values(breakdown);
+  const { popularity: _popularity, ...visibleSignals } = breakdown;
+  const signals = Object.values(visibleSignals);
   return (
     <div className="flex gap-1 mt-3">
       {signals.map((value, i) => {
@@ -194,8 +196,8 @@ export default function DashboardPage() {
       };
     });
 
-    // Show last 8 weeks, drop the current incomplete week if it's 0
-    const recent = allWeeks.slice(-8);
+    // Show last 6 weeks, drop the current incomplete week if it's 0
+    const recent = allWeeks.slice(-6);
     const last = recent[recent.length - 1];
     if (last && last.commits === 0) recent.pop();
     return recent;
@@ -326,7 +328,7 @@ export default function DashboardPage() {
             Commit Activity
           </h2>
           <p className="text-xs text-slate-400 mb-4">
-            Last 4 weeks across all repositories
+            Last 6 weeks across all repositories
           </p>
           {commitChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>

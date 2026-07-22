@@ -197,7 +197,7 @@ export default function RepoDetailPage() {
         { signal: "PRs", score: health.breakdown.prHealth },
         { signal: "Docs", score: health.breakdown.documentation },
         { signal: "Structure", score: health.breakdown.repoStructure },
-        { signal: "Popularity", score: health.breakdown.popularity },
+        // { signal: "Popularity", score: health.breakdown.popularity },
       ]
     : [];
 
@@ -300,28 +300,28 @@ export default function RepoDetailPage() {
                     score: health.breakdown.commitActivity,
                     icon: "📈",
                     what: "How consistently do you commit?",
-                    how: "100 = 50+ commits · 50 = around 10 commits · 0 = 1 or fewer",
+                    how: "100 = 30+ commits · 60 = around 5 commits · 10 = 1 or fewer",
                   },
                   {
                     label: "Issue Management",
                     score: health.breakdown.issueManagement,
                     icon: "🐛",
                     what: "Are open issues being resolved?",
-                    how: "100 = all issues closed · 50 = no issues at all · 0 = all open",
+                    how: "100 = all issues closed · 90 = no issues at all · 10 = mostly open",
                   },
                   {
                     label: "PR Health",
                     score: health.breakdown.prHealth,
                     icon: "🔀",
                     what: "How fast are pull requests merged?",
-                    how: "100 = merged within hours · 50 = no PRs · 0 = takes weeks",
+                    how: "100 = merged within a day · 90 = no PRs · 10 = takes over a month",
                   },
                   {
                     label: "Documentation",
                     score: health.breakdown.documentation,
                     icon: "📝",
                     what: "Is your repo easy to understand?",
-                    how: "Points for README, LICENSE, description, and README size",
+                    how: "Points for README, README size, and description",
                   },
                   {
                     label: "Repo Structure",
@@ -330,13 +330,13 @@ export default function RepoDetailPage() {
                     what: "Is your repo well organized?",
                     how: "Points for .gitignore, GitHub Actions, CONTRIBUTING.md",
                   },
-                  {
-                    label: "Popularity",
-                    score: health.breakdown.popularity,
-                    icon: "⭐",
-                    what: "How visible is your repo?",
-                    how: "100 = 50+ stars · 50 = around 10 stars · 0 = no stars",
-                  },
+                  // {
+                  //   label: "Popularity",
+                  //   score: health.breakdown.popularity,
+                  //   icon: "⭐",
+                  //   what: "How visible is your repo?",
+                  //   how: "100 = 50+ stars · 50 = around 10 stars · 0 = no stars",
+                  // },
                 ].map((item, i) => {
                   const barColor =
                     item.score >= 70

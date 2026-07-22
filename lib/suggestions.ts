@@ -34,7 +34,6 @@ export async function getAISuggestions(
                     - PR Health: ${breakdown.prHealth}/100
                     - Documentation: ${breakdown.documentation}/100
                     - Repository Structure: ${breakdown.repoStructure}/100
-                    - Popularity: ${breakdown.popularity}/100
 
                     Dependency Health:
                     - Total Dependencies: ${dependencies.totalDependencies}
